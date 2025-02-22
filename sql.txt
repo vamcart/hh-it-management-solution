@@ -1,0 +1,244 @@
+SELECT SUM(amount) Total_Amount, 
+       MONTH(trdate) `MONTH`
+FROM transactions
+where amount_to = 10 or amont_from = 10
+GROUP BY MONTH(trdate)
+
+select left(trdate,7) month, count(id) trans_count, sum(amount) trans_total_amount from transactions group by month;
+
+
+
+SELECT SUM(amount) Total_Amount,
+(SELECT SUM(amount) FROM transactions WHERE account_to = 10) as Total_Amount_In,
+(SELECT SUM(amount) FROM transactions WHERE account_from = 10) as Total_Amount_Out,
+       MONTH(trdate) `MONTH`
+FROM transactions
+GROUP BY MONTH(trdate)
+
+
+select 
+
+left(trdate,7) as month, 
+
+count(id) as trans_count, 
+
+sum(amount) as trans_total_amount ,
+
+(SELECT SUM(amount) FROM transactions WHERE account_to = 10) as trans_total_amount 
+
+from 
+
+transactions 
+
+group by month;
+
+https://stackoverflow.com/questions/42861175/sql-query-to-return-sum-of-column-grouped-by-months-including-all-prior-dates
+
+SELECT SUM(amount) Total_Amount,
+       MONTH(trdate) `MONTH`
+FROM transactions
+
+where account_to = 10 or account_from = 10
+
+GROUP BY MONTH(trdate)
+
+https://stackoverflow.com/questions/51152852/balance-for-each-month-by-type
+
+
+SELECT SUM(amount) Total_Amount, MONTH(trdate) `MONTH` FROM transactions where account_from in (10,11) GROUP BY MONTH(trdate);
+
+
+SELECT SUM(amount) Total_Amount, MONTH(trdate) `MONTH` FROM transactions where account_to in (10,11) GROUP BY MONTH(trdate);
+
+https://dba.stackexchange.com/questions/256782/select-query-for-group-amounts-per-month-and-year-mysql
+
+https://stackoverflow.com/questions/52373084/sqlite-summing-values-in-a-case-expression-within-a-select
+
+SELECT  MONTH(trdate) `MONTH`, 
+   YEAR(trdate) `YEAR`,
+    SUM(CASE when account_from=10 then amount END) EXPENSES ,
+   SUM(CASE when account_to=10 then amount END) INCOME ,
+   SUM(amount) Total_Amount 
+FROM transactions
+GROUP BY MONTH(trdate), YEAR(trdate) order by MONTH desc
+
+
+SELECT  MONTH(trdate) `MONTH`, 
+   YEAR(trdate) `YEAR`,
+    SUM(CASE when account_from=10 then amount END) EXPENSES ,
+   SUM(CASE when account_to=10 then amount END) INCOME ,
+   SUM(amount) Total_Amount 
+FROM transactions
+GROUP BY MONTH(trdate), YEAR(trdate) order by MONTH desc
+
+
+SELECT  MONTH(trdate) `MONTH`, 
+   YEAR(trdate) `YEAR`,
+    SUM(CASE when account_from=10 or account_from=11 then amount END) EXPENSES ,
+   SUM(CASE when account_to=10 and account_from=11 then amount END) INCOME ,
+   SUM(amount) Total_Amount 
+FROM transactions
+GROUP BY MONTH(trdate), YEAR(trdate) order by MONTH desc
+
+
+
+
+SELECT  MONTH(trdate) `MONTH`, 
+   YEAR(trdate) `YEAR`,
+    SUM(CASE when account_from in (10,11) then amount END) EXPENSES ,
+   SUM(CASE when account_to in (10,11) then amount END) INCOME ,
+   SUM(amount) Total_Amount 
+FROM transactions
+GROUP BY MONTH(trdate), YEAR(trdate) order by MONTH desc
+
+
+
+Для одного счёта пользователя правильный запрос:
+
+SELECT  MONTH(trdate) MONTH, 
+   YEAR(trdate) YEAR,
+    SUM(CASE when account_from=10  then amount END) EXPENSES ,
+   SUM(CASE when account_to=10 then amount END) INCOME ,
+   SUM(CASE when account_from in (10,11) and account_to in (10,11)  then amount END) TOTAL 
+FROM transactions
+GROUP BY MONTH(trdate), YEAR(trdate) order by MONTH asc
+
+используя in:
+
+SELECT  MONTH(trdate) MONTH, 
+   YEAR(trdate) YEAR,
+   SUM(CASE when account_from in (10) then amount END) EXPRESS ,
+   SUM(CASE when account_to in (10) then amount END) INCOME,
+   SUM(CASE when account_from in (10,11) and account_to in (10,11) then amount else null END) TOTAL 
+FROM transactions
+GROUP BY MONTH(trdate), YEAR(trdate) order by MONTH asc
+
+
+Для нескольких счетов пользователя правильный запрос:
+
+
+
+SELECT  MONTH(trdate) MONTH, 
+   YEAR(trdate) YEAR,
+   SUM(CASE when account_from in (10,11) then amount else null END) OUT_TOTAL ,
+   SUM(CASE when account_to in (10,11) then amount else null END) IN_TOTAL,
+   SUM(CASE when account_from in (10,11) and account_to in (10,11) then amount else null END) TOTAL 
+FROM transactions
+GROUP BY MONTH(trdate), YEAR(trdate) order by MONTH asc
+
+
+
+тест:
+
+
+SELECT  MONTH(trdate) MONTH, 
+   YEAR(trdate) YEAR,
+    SUM(case when account_from=10 then amount end) EXPENSES ,
+   SUM(CASE when account_to=10 then amount END) INCOME ,
+   SUM(CASE when account_from in (10,11) and account_to in (10,11) then amount else null END) TOTAL 
+FROM transactions
+GROUP BY MONTH(trdate), YEAR(trdate) order by MONTH asc
+
+
+
+
+
+
+SELECT  MONTH(trdate) MONTH, 
+   YEAR(trdate) YEAR,
+    SUM(case when account_from in (10,11) then amount else null end) EXPENSES ,
+   SUM(CASE when account_from in (10,11) then amount END) INCOME ,
+   SUM(CASE when account_from in (10,11) and account_to in (10,11) then amount else null END) TOTAL 
+FROM transactions
+GROUP BY MONTH(trdate), YEAR(trdate) order by MONTH asc
+
+
+Хороший запрос для 2 счетов пользователя:
+
+ПРАВИЛЬНЫЙ:
+
+SELECT  MONTH(trdate) as month, 
+   YEAR(trdate) as year,
+   SUM(CASE when account_from in (10,11) then amount else null END) as out_total ,
+   SUM(CASE when account_to in (10,11) then amount else null END) as in_total,
+   SUM(CASE when account_from in (10,11) and account_to in (10,11) then amount else null END) as total 
+FROM transactions
+GROUP BY month, year order by month asc;
+
+
+SQLite запрос:
+
+SELECT strftime("%m", trdate) as month,
+   SUM(CASE when account_from in (10,11) then amount else null END) as out_total ,
+   SUM(CASE when account_to in (10,11) then amount else null END) as in_total,
+   SUM(CASE when account_from in (10,11) and account_to in (10,11) then amount else null END) as total 
+FROM transactions
+GROUP BY month order by month asc;
+
+SQLite без total:
+
+SELECT strftime("%m", trdate) as month,
+   SUM(CASE when account_from in (10,11) then amount else null END) as out_total,
+   SUM(CASE when account_to in (10,11) then amount else null END) as in_total
+FROM transactions
+GROUP BY month order by month asc;
+
+Запрос юзеров с транзакциями account_from:
+
+
+SELECT MAX(users.name) AS user_name
+     , user_accounts.id AS user_accounts_id
+  FROM users
+       INNER JOIN user_accounts
+               ON user_accounts.user_id = users.id
+       INNER JOIN transactions
+               ON (transactions.account_from = user_accounts.id)
+               OR (transactions.account_to = user_accounts.id)
+ GROUP BY user_accounts.id
+;
+
+Финальный:
+
+SELECT MAX(users.name) AS user_name,
+       users.id AS user_id
+  FROM users
+       INNER JOIN user_accounts
+               ON user_accounts.user_id = users.id
+       INNER JOIN transactions
+               ON (transactions.account_from = user_accounts.id)
+               OR (transactions.account_to = user_accounts.id)
+ GROUP BY users.id
+
+;
+
+
+Финальный для SQLite (в mysql ошибка)
+
+        SELECT users.name, users.id
+        FROM users
+            INNER JOIN user_accounts
+                    ON user_accounts.user_id = users.id
+            INNER JOIN transactions
+                    ON (transactions.account_from = user_accounts.id)
+                    OR (transactions.account_to = user_accounts.id)
+        GROUP BY users.id
+        ;
+        
+Финальный для mySQL:
+
+        SELECT max(users.name), users.id
+        FROM users
+            INNER JOIN user_accounts
+                    ON user_accounts.user_id = users.id
+            INNER JOIN transactions
+                    ON (transactions.account_from = user_accounts.id)
+                    OR (transactions.account_to = user_accounts.id)
+        GROUP BY users.id
+        ;        
+
+Запрос счетов пользователя:
+
+SELECT id
+        FROM   user_accounts
+        where user_id = '10'
+        ORDER  BY id ASC; 
