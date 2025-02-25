@@ -46,7 +46,12 @@ function get_user_transactions_balances($user_id, $conn)
             Sum(CASE
                     WHEN account_to IN ( " . $accounts . " ) THEN amount
                     ELSE NULL
-                END)               AS in_total
+                END)               AS in_total,
+            Count(CASE
+                    WHEN account_to IN ( " . $accounts . " ) THEN amount
+                    WHEN account_from IN ( " . $accounts . " ) THEN amount
+                    ELSE NULL
+                END)               AS count
         FROM   transactions
         GROUP  BY month
         ORDER  BY month ASC; 
@@ -61,7 +66,8 @@ function get_user_transactions_balances($user_id, $conn)
 
     $transactions = array();
     while ($row = $statement->fetch()) {
-        $transactions[$row['month']] = $row['in_total'] - $row['out_total'];
+        $transactions[$row['month']]['total'] = $row['in_total'] - $row['out_total'];
+        $transactions[$row['month']]['count'] = $row['count'];
     }
     return $transactions;
 }

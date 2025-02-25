@@ -41,8 +41,10 @@ $conn = get_connect();
       <tr>
         <th>Month</th>
         <th>Amount</th>
+        <th>Days With Transactions</th>
       </tr>
       <tr>
+        <td>...</td>
         <td>...</td>
         <td>...</td>
     </table>

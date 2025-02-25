@@ -41,7 +41,9 @@ async function getData(userId) {
         new Date(property)
       );
       cell = row.insertCell();
-      cell.textContent = data[property];
+      cell.textContent = data[property].total;
+      cell = row.insertCell();
+      cell.textContent = data[property].count;
     }
   } catch (error) {
     console.error(error.message);
